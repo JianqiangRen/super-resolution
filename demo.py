@@ -3,11 +3,10 @@ import glob
 import logging
 import argparse
 import numpy as np
-
 from model import load_model
 from util import load_image, init_session
-
 from PIL import Image
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,10 @@ def main(args):
     for path in image_paths(args.indir):
         logger.info('Super-resolve image %s', path)
         lr = load_image(path)
+        starttime = datetime.datetime.now()
         sr = resolve(model, lr)
+        endtime = datetime.datetime.now()
+        print("resolve time cost:",endtime - starttime)
         sr.save(os.path.join(args.outdir, resolved_name(path)))
 
 
