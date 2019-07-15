@@ -51,35 +51,12 @@ def freeze_session(session, keep_var_names=None, output_names=None, clear_device
                                                       output_names, freeze_var_names)
         return frozen_graph
 
-
-def _crop_hr_in_training(hr, sr):
-    """
-    Remove margin of size scale*2 from hr in training phase.
-
-    The margin is computed from size difference of hr and sr
-    so that no explicit scale parameter is needed. This is only
-    needed for WDSR models.
-    """
-
-    margin = (tf.shape(hr)[1] - tf.shape(sr)[1]) // 2
-
-    # crop only if margin > 0
-    hr_crop = tf.cond(tf.equal(margin, 0),
-                      lambda: hr,
-                      lambda: hr[:, margin:-margin, margin:-margin, :])
-
-    hr = K.in_train_phase(hr_crop, hr)
-    hr.uses_learning_phase = True
-    return hr, sr
  
 def mae(hr, sr):
-    hr, sr = _crop_hr_in_training(hr, sr)
     return mean_absolute_error(hr, sr)
 
-
 def psnr(hr, sr):
-    hr, sr = _crop_hr_in_training(hr, sr)
-    return tf.image.psnr(hr, sr, max_val=255)
+    return mean_absolute_error(hr, sr)
 
 
 if __name__ == '__main__':
@@ -102,10 +79,15 @@ if __name__ == '__main__':
         'psnr_scale_3': psnr,
         'psnr_scale_4': psnr
     }
-    model = load_model('download/wdsr-a-32-x4-psnr-29.1736.h5', custom_objects={**_custom_objects, **_custom_objects_backwards_compat})
+    
+    custom = {}
+    custom.update(_custom_objects)
+    custom.update(_custom_objects_backwards_compat)
+    model = load_model('download/wdsr-a-32-x4-psnr-29.1736.h5', custom_objects=custom)
  
     print(model.inputs)
     print(model.outputs)
     frozen_graph = freeze_session(K.get_session(),
                                   output_names=[out.op.name for out in model.outputs])
-    tf.train.write_graph(frozen_graph, "download", "tf_model.pb", as_text=False)
+    tf.train.write_graph(frozen_graph, "download", "wdsr-a-32-x4.pb", as_text=False)
+    print("freeze done")

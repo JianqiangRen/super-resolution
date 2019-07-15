@@ -143,7 +143,7 @@ def data_based_init(model, input):
     sess = K.get_session()
     pbar = tqdm(layer_output_weight_bias)
     for l,o,W,b in pbar:
-        pbar.set_description(f"Init layer {l}")
+        pbar.set_description("Init layer {}".format(l))
         m,v = tf.nn.moments(o, [i for i in range(len(o.get_shape())-1)])
         s = tf.sqrt(v + 1e-10)
         W_updated = W/tf.reshape(s,[1]*(len(W.get_shape())-1)+[-1])

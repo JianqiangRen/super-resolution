@@ -10,8 +10,8 @@ def SubpixelConv2D(scale, **kwargs):
     return Lambda(lambda x: tf.depth_to_space(x, scale), **kwargs)
 
 
-def Normalization(rgb_mean=DIV2K_RGB_MEAN, **kwargs):
-    return Lambda(lambda x: (x - rgb_mean) / 127.5, **kwargs)
+def Normalization(rgb_mean=DIV2K_RGB_MEAN):
+    return Lambda(lambda x: (x - rgb_mean) / 127.5)
 
 
 def Denormalization(rgb_mean=DIV2K_RGB_MEAN, **kwargs):
